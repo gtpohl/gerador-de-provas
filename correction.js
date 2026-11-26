@@ -841,3 +841,5 @@ if(!exam){
  report();
  renderStudentManager();
 }
+
+window.atelierPortalSnapshot=()=>{if(!exam)throw Error('Salve a avaliação primeiro.');return {title:exam.title,rows:exam.results.map(r=>{const student=exam.students.find(s=>s.id===r.id),g=scoreResult(exam,r);return {ra:String(r.id),payload:{name:student.name,group:student.group,model:r.model,...g,max:exam.max,n:exam.n,questions:r.answers.map((answer,i)=>{const key=exam.keys[r.model][i],points=questionPoints(exam,r.model,i);return {answer,key,points,earned:key==='X'||answer===key?points:0};})}};})};};

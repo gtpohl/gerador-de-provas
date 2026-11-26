@@ -1,0 +1,13 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('correction.js','utf8');
+const functions=source.slice(source.indexOf('function questionUnits('),source.indexOf('function grade('));
+const snapshot=source.slice(source.indexOf('window.atelierPortalSnapshot='));
+const context={window:{},exam:null};vm.createContext(context);vm.runInContext(functions+snapshot,context);
+const e={title:'Teste',students:[{id:'001',name:'Aluno teste',group:'1A'}],n:2,max:10,keys:{A:['A','B']},results:[{id:'001',model:'A',answers:['A','C']}],scoring:{mode:'equal'}};context.exam=e;
+assert.equal(context.window.atelierPortalSnapshot().rows[0].payload.note,5);
+e.keys.A[1]='X';assert.equal(context.window.atelierPortalSnapshot().rows[0].payload.note,10);
+e.keys.A[1]='B';e.scoring={mode:'weights',values:{1:1,2:3}};assert.equal(context.window.atelierPortalSnapshot().rows[0].payload.note,2.5);
+e.scoring.mode='points';e.max=4;assert.equal(context.window.atelierPortalSnapshot().rows[0].payload.note,1);
+e.keys.A[1]='X';const row=context.window.atelierPortalSnapshot().rows[0];assert.equal(row.payload.note,4);assert.equal(row.payload.questions[1].earned,3);assert.equal(row.ra,'001');
+e.results=[];assert.equal(context.window.atelierPortalSnapshot().rows.length,0);
+console.log('6 cenários aprovados: cálculo, anulação, pesos, pontos, detalhes e ausência de correções.');
